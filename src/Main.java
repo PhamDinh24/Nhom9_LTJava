@@ -4,11 +4,11 @@ import UI.XuatBaoCaoDialog;
 import database.JDBCUtil;
 import UI.PhongTrolog;
 import UI.Trolog;
+import UI.TimKiemDialog;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -19,14 +19,13 @@ import java.sql.SQLException;
 
 public class Main {
     private JFrame frame;
-    private JTextField txtMaSV, txtQueQuan, txtHoTen, txtSDT, txtNgaySinh, txtGmail;
+    private JTextField txtMaKhach, txtQueQuan, txtHoTen, txtSDT, txtNgaySinh, txtEmail;
     private JTable table;
     private DefaultTableModel tableModel;
     private JComboBox<String> cbGioiTinh;
 
     public Main() {
         initializeUI();
-        setupEventListeners();
         connectToDatabase();
     }
 
@@ -36,27 +35,14 @@ public class Main {
         frame.setSize(1000, 600);
         frame.setLayout(new BorderLayout());
 
-        // Title Panel
-        JPanel titlePanel = createTitlePanel();
-
-        // Center Panel with Form and Table
-        JPanel centerPanel = createCenterPanel();
-
-        // Menu Panel
-        JPanel menuPanel = createMenuPanel();
-
-        // Button Panel
-        JPanel buttonPanel = createButtonPanel();
-
-        // Main Panel Assembly
         JPanel mainPanel = new JPanel(new BorderLayout());
-        mainPanel.add(titlePanel, BorderLayout.NORTH);
-        mainPanel.add(centerPanel, BorderLayout.CENTER);
-        mainPanel.add(menuPanel, BorderLayout.WEST);
-        mainPanel.add(buttonPanel, BorderLayout.SOUTH);
+        mainPanel.add(createTitlePanel(), BorderLayout.NORTH);
+        mainPanel.add(createCenterPanel(), BorderLayout.CENTER);
+        mainPanel.add(createMenuPanel(), BorderLayout.WEST);
+        mainPanel.add(createButtonPanel(), BorderLayout.SOUTH);
 
         frame.add(mainPanel);
-        frame.setLocationRelativeTo(null); // Center on screen
+        frame.setLocationRelativeTo(null);
         frame.setVisible(true);
     }
 
@@ -72,319 +58,105 @@ public class Main {
     private JPanel createCenterPanel() {
         JPanel centerPanel = new JPanel(new BorderLayout());
 
-        // Form Panel
         JPanel formPanel = new JPanel(new GridLayout(8, 2, 5, 5));
-        formPanel.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createEmptyBorder(20, 20, 20, 20),
-            BorderFactory.createTitledBorder("Thông Tin Khách trọ:")
-        ));
+        formPanel.setBorder(BorderFactory.createTitledBorder("Thông Tin Khách Trọ"));
 
-        formPanel.add(new JLabel("Mã Khách:"));
-        txtMaSV = new JTextField();
-        formPanel.add(txtMaSV);
+        txtMaKhach = createLabeledTextField(formPanel, "Mã Khách:");
+        txtHoTen = createLabeledTextField(formPanel, "Họ Tên:");
+        txtNgaySinh = createLabeledTextField(formPanel, "Ngày Sinh:");
 
-        formPanel.add(new JLabel("Quê Quán:"));
-        txtQueQuan = new JTextField();
-        formPanel.add(txtQueQuan);
-
-        formPanel.add(new JLabel("Họ Tên:"));
-        txtHoTen = new JTextField();
-        formPanel.add(txtHoTen);
-        
         formPanel.add(new JLabel("Giới Tính:"));
-        cbGioiTinh = new JComboBox<>(new String[]{"Nam", "Nữ"}); 
+        cbGioiTinh = new JComboBox<>(new String[]{"Nam", "Nữ"});
         formPanel.add(cbGioiTinh);
 
-        formPanel.add(new JLabel("Số điện thoại:"));
-        txtSDT = new JTextField();
-        formPanel.add(txtSDT);
-
-        formPanel.add(new JLabel("Ngày Sinh:"));
-        txtNgaySinh = new JTextField();
-        formPanel.add(txtNgaySinh);
-
-        formPanel.add(new JLabel("Gmail:"));
-        txtGmail = new JTextField();
-        formPanel.add(txtGmail);
+        txtQueQuan = createLabeledTextField(formPanel, "Quê Quán:");
+        txtSDT = createLabeledTextField(formPanel, "Số Điện Thoại:");
+        txtEmail = createLabeledTextField(formPanel, "Email:");
 
         centerPanel.add(formPanel, BorderLayout.NORTH);
 
-
         tableModel = new DefaultTableModel();
-        tableModel.setColumnIdentifiers(new String[]{"Mã Khách", "Họ Tên", "Ngày Sinh", "Giới Tính", "Quê Quán", "Số Điện Thoại", "Gmail"});
+        tableModel.setColumnIdentifiers(new String[]{"Mã Khách", "Họ Tên", "Ngày Sinh", "Giới Tính", "Quê Quán", "Số Điện Thoại", "Email"});
         table = new JTable(tableModel);
-        table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        JScrollPane scrollPane = new JScrollPane(table);
-        centerPanel.add(scrollPane, BorderLayout.CENTER);
-        loadData();
-        
         table.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                int selectedRow = table.getSelectedRow();
-                if (selectedRow != -1) {
-                    txtMaSV.setText(tableModel.getValueAt(selectedRow, 0).toString());
-                    txtHoTen.setText(tableModel.getValueAt(selectedRow, 1).toString());
-                    txtNgaySinh.setText(tableModel.getValueAt(selectedRow, 2).toString());
-                    cbGioiTinh.setSelectedItem(tableModel.getValueAt(selectedRow, 3).toString());
-                    txtQueQuan.setText(tableModel.getValueAt(selectedRow, 4).toString());
-                    txtSDT.setText(tableModel.getValueAt(selectedRow, 5).toString());
-                    txtGmail.setText(tableModel.getValueAt(selectedRow, 6).toString());
-                }
+                populateFormFromTable();
             }
         });
+        centerPanel.add(new JScrollPane(table), BorderLayout.CENTER);
 
+        loadData();
         return centerPanel;
     }
-    
-    private void showDanhSachPhongTro() {
-    	PhongTrolog PhongTrolog = new PhongTrolog(frame);
-        PhongTrolog.setVisible(true);
+
+    private JTextField createLabeledTextField(JPanel panel, String labelText) {
+        panel.add(new JLabel(labelText));
+        JTextField textField = new JTextField();
+        panel.add(textField);
+        return textField;
     }
-    
-    private void showNhapTro() {
-    	Trolog Trolog = new Trolog(frame);
-        Trolog.setVisible(true);
-    }
-    
-    private void showDongTien() {
-        DongTienDialog dongTienDialog = new DongTienDialog(frame);
-        dongTienDialog.setVisible(true);
-    }
-    
-    private void showXuatBaoCao() {
-        XuatBaoCaoDialog xuatBaoCaoDialog = new XuatBaoCaoDialog(frame); 
-        xuatBaoCaoDialog.setVisible(true); 
+
+    private void populateFormFromTable() {
+        int selectedRow = table.getSelectedRow();
+        if (selectedRow != -1) {
+            txtMaKhach.setText(tableModel.getValueAt(selectedRow, 0).toString());
+            txtHoTen.setText(tableModel.getValueAt(selectedRow, 1).toString());
+            txtNgaySinh.setText(tableModel.getValueAt(selectedRow, 2).toString());
+            cbGioiTinh.setSelectedItem(tableModel.getValueAt(selectedRow, 3).toString());
+            txtQueQuan.setText(tableModel.getValueAt(selectedRow, 4).toString());
+            txtSDT.setText(tableModel.getValueAt(selectedRow, 5).toString());
+            txtEmail.setText(tableModel.getValueAt(selectedRow, 6).toString());
+        }
     }
 
     private JPanel createMenuPanel() {
-        JPanel menuPanel = new JPanel(new GridLayout(5, 1, 10, 10));
+        JPanel menuPanel = new JPanel(new GridLayout(4, 1, 10, 10));
         menuPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
-        String[] menuItems = {
-            "Danh sách Phòng trọ", 
-            "Nhập trọ", 
-            "Đóng tiền", 
-            "Xuất Báo Cáo"
-        };
-
-        for (String item : menuItems) {
-            JButton btn = new JButton(item);
-            btn.setBackground(new Color(240, 240, 240));
-
-            btn.addActionListener(e -> {
-                System.out.println("Bạn đã chọn menu: " + item);
-
-                switch (item) {
-                    case "Danh sách Phòng trọ":
-                        showDanhSachPhongTro();
-                        break;
-                    case "Nhập trọ":
-                        showNhapTro();
-                        break;
-                    case "Đóng tiền":
-                        showDongTien();
-                        break;
-                    case "Xuất Báo Cáo":
-                        showXuatBaoCao();
-                        break;
-                    default:
-                        System.out.println("Menu không xác định!");
-                }
-            });
-
-            menuPanel.add(btn);
-        }
+        createMenuButton(menuPanel, "Danh Sách Phòng Trọ", this::showDanhSachPhongTro);
+        createMenuButton(menuPanel, "Nhập Trọ", this::showNhapTro);
+        createMenuButton(menuPanel, "Đóng Tiền", this::showDongTien);
+        createMenuButton(menuPanel, "Xuất Báo Cáo", this::showXuatBaoCao);
 
         return menuPanel;
     }
 
+    private void createMenuButton(JPanel panel, String title, Runnable action) {
+        JButton btn = new JButton(title);
+        btn.addActionListener(e -> action.run());
+        panel.add(btn);
+    }
+
     private JPanel createButtonPanel() {
         JPanel buttonPanel = new JPanel();
-        String[] buttonLabels = {"Thêm mới", "Cập Nhật", "Xóa"};
-
-        for (String label : buttonLabels) {
-            JButton btn = new JButton(label);
-            btn.addActionListener(e -> {
-                System.out.println("Bạn đã nhấn nút: " + label);
-                switch (label) {
-                    case "Thêm mới":
-                        handleThemmoi();
-                        break;
-                    case "Cập Nhật":
-                        handleCapNhat();
-                        break;
-                    case "Xóa":
-                        handleXoa();
-                        break;
-                    default:
-                        System.out.println("Nút không xác định!");
-                }
-            });
-
-            buttonPanel.add(btn);
-        }
-
+        createActionButton(buttonPanel, "Thêm Mới", this::handleThemmoi);
+        createActionButton(buttonPanel, "Cập Nhật", this::handleCapNhat);
+        createActionButton(buttonPanel, "Xóa", this::handleXoa);
+        createActionButton(buttonPanel, "Tìm kiếm", this::TimKiemDialog);
         return buttonPanel;
     }
-    
-    private void handleThemmoi() {
-    	String gioiTinh = (String) cbGioiTinh.getSelectedItem();
-    	Connection connection = JDBCUtil.getConnection();
-        if (connection == null) {
-            JOptionPane.showMessageDialog(frame, "Không thể kết nối tới cơ sở dữ liệu!", "Lỗi", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
 
-        try {
-            String query = "INSERT INTO KhachTro (hoTen, ngaySinh, gioiTinh, queQuan, soDienThoai, gmail) VALUES (?, ?, ?, ?, ?, ?)";
-            PreparedStatement statement = connection.prepareStatement(query);
-
-           
-            statement.setString(1, txtHoTen.getText());
-            statement.setDate(2, java.sql.Date.valueOf(txtNgaySinh.getText())); 
-            statement.setString(3, gioiTinh);
-            statement.setString(4, txtQueQuan.getText());
-            statement.setString(5, txtSDT.getText());
-            statement.setString(6, txtGmail.getText());
-
-            
-            int rows = statement.executeUpdate();
-            if (rows > 0) {
-                JOptionPane.showMessageDialog(frame, "Thêm mới thành công!");
-                loadData(); 
-                clearFields(); 
-            } else {
-                JOptionPane.showMessageDialog(frame, "Không thể thêm mới!", "Lỗi", JOptionPane.ERROR_MESSAGE);
-            }
-
-            statement.close();
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            JOptionPane.showMessageDialog(frame, "Lỗi khi thêm mới dữ liệu: " + ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
-        } finally {
-        	JDBCUtil.closeConnection(connection);
-        }
-     
-    }
-
-    
-    private void handleTimKiem() {
-        System.out.println("Đang xử lý tìm kiếm...");
-     
-    }
-
-
-    private void handleCapNhat() {
-    	String gioiTinh = (String) cbGioiTinh.getSelectedItem();
-    	Connection connection = JDBCUtil.getConnection();
-        if (connection == null) {
-            JOptionPane.showMessageDialog(frame, "Không thể kết nối tới cơ sở dữ liệu!", "Lỗi", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-
-        try {
-            String query = "UPDATE KhachTro SET hoTen=?, ngaySinh=?, gioiTinh=?, queQuan=?, soDienThoai=?, gmail=? WHERE maKhach=?";
-            PreparedStatement statement = connection.prepareStatement(query);
-            statement.setString(1, txtHoTen.getText());
-            statement.setDate(2, java.sql.Date.valueOf(txtNgaySinh.getText())); // YYY-MM-DD
-            statement.setString(3, gioiTinh);
-            statement.setString(4, txtQueQuan.getText());
-            statement.setString(5, txtSDT.getText());
-            statement.setString(6, txtGmail.getText());
-            statement.setLong(7, Long.parseLong(txtMaSV.getText()));
-
-            int rows = statement.executeUpdate();
-            if (rows > 0) {
-                JOptionPane.showMessageDialog(frame, "Cập nhật thành công!");
-                loadData(); 
-            }
-
-            statement.close();
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            JOptionPane.showMessageDialog(frame, "Lỗi khi cập nhật dữ liệu!", "Lỗi", JOptionPane.ERROR_MESSAGE);
-        } finally {
-        	JDBCUtil.closeConnection(connection);
-        }
-    }
-
-
-    private void handleXoa() {
-    	Connection connection = JDBCUtil.getConnection();
-        if (connection == null) {
-            JOptionPane.showMessageDialog(frame, "Không thể kết nối tới cơ sở dữ liệu!", "Lỗi", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-
-        try {
-            String query = "DELETE FROM KhachTro WHERE maKhach=?";
-            PreparedStatement statement = connection.prepareStatement(query);
-            statement.setLong(1, Long.parseLong(txtMaSV.getText()));
-
-            int rows = statement.executeUpdate();
-            if (rows > 0) {
-                JOptionPane.showMessageDialog(frame, "Xóa thành công!");
-                clearFields();
-                loadData();
-            }
-
-            statement.close();
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            JOptionPane.showMessageDialog(frame, "Lỗi khi xóa dữ liệu!", "Lỗi", JOptionPane.ERROR_MESSAGE);
-        } finally {
-        	JDBCUtil.closeConnection(connection);
-        }
-        
-    }
-
-    private void handleHienThi() {
-        System.out.println("Đang xử lý hiển thị...");
-       
-    }
-    
-    private void clearFields() {
-        txtMaSV.setText("");
-        txtHoTen.setText("");
-        txtNgaySinh.setText("");
-        txtQueQuan.setText("");
-        txtSDT.setText("");
-        txtGmail.setText("");
-    }
-
-
-
-    private void setupEventListeners() {
-        // TODO: Implement event handling for buttons
+    private void createActionButton(JPanel panel, String label, Runnable action) {
+        JButton btn = new JButton(label);
+        btn.addActionListener(e -> action.run());
+        panel.add(btn);
     }
 
     private void connectToDatabase() {
-        try {
-            Connection connection = JDBCUtil.getConnection();
+        try (Connection connection = JDBCUtil.getConnection()) {
             if (connection != null) {
-                System.out.println("Database connection successful!");
-                connection.close();
+                System.out.println("Kết nối cơ sở dữ liệu thành công!");
             }
         } catch (SQLException e) {
-            JOptionPane.showMessageDialog(frame, 
-                "Lỗi kết nối cơ sở dữ liệu: " + e.getMessage(), 
-                "Lỗi", 
-                JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(frame, "Lỗi kết nối cơ sở dữ liệu: " + e.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
         }
     }
-    
-    private void loadData() {
-        Connection connection = JDBCUtil.getConnection();
-        if (connection == null) {
-        	JOptionPane.showMessageDialog(frame, "Không thể kết nối tới cơ sở dữ liệu!", "Lỗi", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
 
-        try {
-            String query = "SELECT * FROM KhachTro";
-            PreparedStatement statement = connection.prepareStatement(query);
-            ResultSet resultSet = statement.executeQuery();
+    private void loadData() {
+        try (Connection connection = JDBCUtil.getConnection();
+             PreparedStatement statement = connection.prepareStatement("SELECT * FROM KhachTro");
+             ResultSet resultSet = statement.executeQuery()) {
 
             tableModel.setRowCount(0);
 
@@ -399,19 +171,121 @@ public class Main {
                         resultSet.getString("gmail")
                 });
             }
-
-            resultSet.close();
-            statement.close();
-        } catch (Exception e) {
+        } catch (SQLException e) {
             e.printStackTrace();
-            JOptionPane.showMessageDialog(frame, "Lỗi khi tải dữ liệu!", "Lỗi", JOptionPane.ERROR_MESSAGE);
-        } finally {
-        	JDBCUtil.closeConnection(connection);
+            JOptionPane.showMessageDialog(frame, "Lỗi khi tải dữ liệu: " + e.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
         }
     }
 
+    private void handleThemmoi() {
+        try (Connection connection = JDBCUtil.getConnection();
+             PreparedStatement statement = connection.prepareStatement("INSERT INTO KhachTro (hoTen, ngaySinh, gioiTinh, queQuan, soDienThoai, gmail) VALUES (?, ?, ?, ?, ?, ?)");) {
+
+            statement.setString(1, txtHoTen.getText());
+            statement.setDate(2, java.sql.Date.valueOf(txtNgaySinh.getText()));
+            statement.setString(3, cbGioiTinh.getSelectedItem().toString());
+            statement.setString(4, txtQueQuan.getText());
+            statement.setString(5, txtSDT.getText());
+            statement.setString(6, txtEmail.getText());
+
+            int rows = statement.executeUpdate();
+            if (rows > 0) {
+                JOptionPane.showMessageDialog(frame, "Thêm mới thành công!");
+                loadData();
+                clearFields();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(frame, "Lỗi khi thêm mới: " + e.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void handleCapNhat() {
+        try (Connection connection = JDBCUtil.getConnection();
+             PreparedStatement statement = connection.prepareStatement("UPDATE KhachTro SET hoTen=?, ngaySinh=?, gioiTinh=?, queQuan=?, soDienThoai=?, gmail=? WHERE maKhach=?");) {
+
+            statement.setString(1, txtHoTen.getText());
+            statement.setDate(2, java.sql.Date.valueOf(txtNgaySinh.getText()));
+            statement.setString(3, cbGioiTinh.getSelectedItem().toString());
+            statement.setString(4, txtQueQuan.getText());
+            statement.setString(5, txtSDT.getText());
+            statement.setString(6, txtEmail.getText());
+            statement.setLong(7, Long.parseLong(txtMaKhach.getText()));
+
+            int rows = statement.executeUpdate();
+            if (rows > 0) {
+                JOptionPane.showMessageDialog(frame, "Cập nhật thành công!");
+                loadData();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(frame, "Lỗi khi cập nhật: " + e.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void handleXoa() {
+        // Hiển thị hộp thoại xác nhận xóa
+        int option = JOptionPane.showConfirmDialog(frame,
+                "Bạn có chắc chắn muốn xóa khách trọ này?",
+                "Xác Nhận Xóa",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.WARNING_MESSAGE);
+
+        // Nếu người dùng chọn "YES", thực hiện xóa
+        if (option == JOptionPane.YES_OPTION) {
+            try (Connection connection = JDBCUtil.getConnection();
+                 PreparedStatement statement = connection.prepareStatement("DELETE FROM KhachTro WHERE maKhach=?");) {
+
+                statement.setLong(1, Long.parseLong(txtMaKhach.getText()));
+
+                int rows = statement.executeUpdate();
+                if (rows > 0) {
+                    JOptionPane.showMessageDialog(frame, "Xóa thành công!");
+                    loadData();
+                    clearFields();
+                } else {
+                    JOptionPane.showMessageDialog(frame, "Mã khách không tồn tại trong cơ sở dữ liệu!");
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+                JOptionPane.showMessageDialog(frame, "Lỗi khi xóa: " + e.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+            }
+        } else {
+            // Nếu người dùng chọn "NO", không làm gì cả (hủy bỏ xóa)
+            JOptionPane.showMessageDialog(frame, "Hành động xóa đã bị hủy bỏ.");
+        }
+    }
+
+    private void clearFields() {
+        txtMaKhach.setText("");
+        txtHoTen.setText("");
+        txtNgaySinh.setText("");
+        txtQueQuan.setText("");
+        txtSDT.setText("");
+        txtEmail.setText("");
+    }
+
+    private void showDanhSachPhongTro() {
+        new PhongTrolog(frame).setVisible(true);
+    }
+
+    private void showNhapTro() {
+        new Trolog(frame).setVisible(true);
+    }
+
+    private void showDongTien() {
+        new DongTienDialog(frame).setVisible(true);
+    }
+
+    private void showXuatBaoCao() {
+        new XuatBaoCaoDialog(frame).setVisible(true);
+    }
+
+    private void TimKiemDialog() {
+        new TimKiemDialog(frame).setVisible(true);
+    }
+
     public static void main(String[] args) {
-        // Use SwingUtilities to ensure thread safety
-        SwingUtilities.invokeLater(() -> new Main());
+        SwingUtilities.invokeLater(Main::new);
     }
 }

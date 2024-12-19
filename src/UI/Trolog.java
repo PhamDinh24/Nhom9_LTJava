@@ -116,6 +116,7 @@ public class Trolog extends JDialog {
         String maPhong = (String) cbMaPhong.getSelectedItem();
         String soTien = txtSoTien.getText();
 
+        // Kiểm tra xem thông tin đã đầy đủ chưa
         if (maKhach == null || maPhong == null || soTien.isEmpty()) {
             JOptionPane.showMessageDialog(this, "Vui lòng điền đầy đủ thông tin!", "Lỗi", JOptionPane.ERROR_MESSAGE);
             return;
@@ -128,31 +129,31 @@ public class Trolog extends JDialog {
         }
 
         try {
-            // Begin Transaction
+            // Bắt đầu giao dịch
             connection.setAutoCommit(false);
 
-            // Insert data into DongTien table
+            // Thêm vào bảng DongTien
             String insertQuery = "INSERT INTO DongTien (maKhach, maPhong, soTien, ngayDong) VALUES (?, ?, ?, CURDATE())";
             PreparedStatement statement = connection.prepareStatement(insertQuery);
-            statement.setString(1, maKhach); // maKhach is a String
-            statement.setString(2, maPhong); // maPhong is a String
-            statement.setDouble(3, Double.parseDouble(soTien));  // SoTien is a double
+            statement.setString(1, maKhach); // maKhach là kiểu String
+            statement.setString(2, maPhong); // maPhong là kiểu String
+            statement.setDouble(3, Double.parseDouble(soTien));  // SoTien là kiểu double
 
             int rowsAffected = statement.executeUpdate();
             if (rowsAffected > 0) {
-                // Update PhongTro table to mark the room as 'Đã thuê'
+                // Cập nhật bảng PhongTro để đánh dấu phòng là "Đã thuê"
                 String updateQuery = "UPDATE PhongTro SET trangThai = 'Đã thuê', maKhach = ? WHERE maPhong = ?";
                 PreparedStatement updateStatement = connection.prepareStatement(updateQuery);
-                updateStatement.setString(1, maKhach);  // Correct type for maKhach
-                updateStatement.setString(2, maPhong);  // Correct type for maPhong
+                updateStatement.setString(1, maKhach);  // maKhach là kiểu String
+                updateStatement.setString(2, maPhong);  // maPhong là kiểu String
 
                 updateStatement.executeUpdate();
                 updateStatement.close();
 
-                // Commit transaction
+                // Cam kết giao dịch
                 connection.commit();
                 JOptionPane.showMessageDialog(this, "Đã nhập trọ thành công!");
-                dispose();  // Close the dialog on success
+                dispose();  // Đóng hộp thoại khi thành công
             } else {
                 JOptionPane.showMessageDialog(this, "Không thể thực hiện giao dịch!", "Lỗi", JOptionPane.ERROR_MESSAGE);
             }
@@ -160,7 +161,7 @@ public class Trolog extends JDialog {
             statement.close();
         } catch (Exception ex) {
             try {
-                connection.rollback();
+                connection.rollback();  // Hoàn tác giao dịch khi có lỗi
             } catch (Exception rollbackEx) {
                 rollbackEx.printStackTrace();
             }
@@ -168,7 +169,7 @@ public class Trolog extends JDialog {
             JOptionPane.showMessageDialog(this, "Lỗi khi xử lý: " + ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
         } finally {
             try {
-                connection.setAutoCommit(true);
+                connection.setAutoCommit(true);  // Khôi phục lại chế độ tự động commit
             } catch (Exception ex) {
                 ex.printStackTrace();
             }

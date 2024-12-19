@@ -5,6 +5,17 @@ CREATE DATABASE QLPTro;
 -- Sử dụng cơ sở dữ liệu
 USE QLPTro;
 
+CREATE TABLE ChuPhong (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,         -- Mã ID, kiểu số nguyên lớn, tự động tăng
+    hoTen VARCHAR(255) NOT NULL,                  -- Họ và tên, chuỗi ký tự, không được để trống
+    ngaySinh DATE,                                -- Ngày sinh, kiểu ngày tháng
+    gioiTinh VARCHAR(50),                         -- Giới tính, chuỗi ký tự (ví dụ: "Nam", "Nữ")
+    CCCD VARCHAR(20) UNIQUE NOT NULL,             -- Số căn cước công dân, chuỗi ký tự, không được để trống và phải duy nhất
+    soDt VARCHAR(15) UNIQUE NOT NULL,             -- Số điện thoại, chuỗi ký tự, không được để trống và phải duy nhất
+    tenTaiKhoan VARCHAR(100) UNIQUE NOT NULL,     -- Tên tài khoản, chuỗi ký tự, không được để trống và phải duy nhất
+    matKhau VARCHAR(255) NOT NULL                 -- Mật khẩu, chuỗi ký tự, không được để trống
+);
+
 -- Tạo bảng KhachTro
 CREATE TABLE KhachTro (
     maKhach BIGINT PRIMARY KEY AUTO_INCREMENT, -- Mã khách tự động tăng

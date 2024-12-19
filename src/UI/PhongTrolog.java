@@ -3,13 +3,11 @@ package UI;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
+import java.sql.*;
 import database.JDBCUtil;
 
 public class PhongTrolog extends JDialog {
-    private JTextField txtMaPhong, txtTenPhong, txtDienTich, txtGiaThue, txtMaKhach;
+    private JTextField txtMaPhong, txtTenPhong, txtDienTich, txtGiaThue, txtMaKhach, txtTimKiem;
     private JTable table;
     private DefaultTableModel tableModel;
     private JComboBox<String> cbTrangThai;
@@ -59,6 +57,7 @@ public class PhongTrolog extends JDialog {
 
         formPanel.add(new JLabel("Trạng Thái:"));
         cbTrangThai = new JComboBox<>(new String[]{"Trống", "Đã thuê"});
+        cbTrangThai.addActionListener(e -> updateMaKhachVisibility());
         formPanel.add(cbTrangThai);
 
         formPanel.add(new JLabel("Mã Khách:"));
@@ -66,6 +65,17 @@ public class PhongTrolog extends JDialog {
         formPanel.add(txtMaKhach);
 
         centerPanel.add(formPanel, BorderLayout.NORTH);
+
+        // Panel for Search
+        JPanel searchPanel = new JPanel();
+        searchPanel.add(new JLabel("Tìm kiếm Mã Phòng:"));
+        txtTimKiem = new JTextField(15);
+        searchPanel.add(txtTimKiem);
+        JButton btnTimKiem = new JButton("Tìm kiếm");
+        btnTimKiem.addActionListener(e -> searchPhongTroByMaPhong());
+        searchPanel.add(btnTimKiem);
+
+        centerPanel.add(searchPanel, BorderLayout.SOUTH);
 
         // Table Panel
         tableModel = new DefaultTableModel();
@@ -119,9 +129,20 @@ public class PhongTrolog extends JDialog {
                 }
             }
         });
+
+        // Update the visibility of "Mã Khách" based on the selected trạng thái
+        updateMaKhachVisibility();
     }
 
-    // Handle Add New Room
+    private void updateMaKhachVisibility() {
+        if (cbTrangThai.getSelectedItem().equals("Trống")) {
+            txtMaKhach.setEnabled(false);  // Disable input for Mã Khách
+            txtMaKhach.setText("");  // Clear the Mã Khách field
+        } else {
+            txtMaKhach.setEnabled(true);  // Enable input for Mã Khách
+        }
+    }
+
     private void handleThemMoi() {
         Connection connection = JDBCUtil.getConnection();
         if (connection == null) {
@@ -136,7 +157,13 @@ public class PhongTrolog extends JDialog {
             statement.setDouble(2, Double.parseDouble(txtDienTich.getText()));
             statement.setDouble(3, Double.parseDouble(txtGiaThue.getText()));
             statement.setString(4, (String) cbTrangThai.getSelectedItem());
-            statement.setLong(5, txtMaKhach.getText().isEmpty() ? 0 : Long.parseLong(txtMaKhach.getText()));
+
+            // Nếu trạng thái là "Trống", không yêu cầu mã khách
+            if (cbTrangThai.getSelectedItem().equals("Trống")) {
+                statement.setNull(5, Types.NULL);  // Không cần mã khách
+            } else {
+                statement.setLong(5, txtMaKhach.getText().isEmpty() ? 0 : Long.parseLong(txtMaKhach.getText()));
+            }
 
             int rows = statement.executeUpdate();
             if (rows > 0) {
@@ -156,7 +183,6 @@ public class PhongTrolog extends JDialog {
         }
     }
 
-    // Handle Update Room
     private void handleCapNhat() {
         Connection connection = JDBCUtil.getConnection();
         if (connection == null) {
@@ -171,7 +197,13 @@ public class PhongTrolog extends JDialog {
             statement.setDouble(2, Double.parseDouble(txtDienTich.getText()));
             statement.setDouble(3, Double.parseDouble(txtGiaThue.getText()));
             statement.setString(4, (String) cbTrangThai.getSelectedItem());
-            statement.setLong(5, txtMaKhach.getText().isEmpty() ? 0 : Long.parseLong(txtMaKhach.getText()));
+
+            // Nếu trạng thái là "Trống", không yêu cầu mã khách
+            if (cbTrangThai.getSelectedItem().equals("Trống")) {
+                statement.setNull(5, Types.NULL);  // Không cần mã khách
+            } else {
+                statement.setLong(5, txtMaKhach.getText().isEmpty() ? 0 : Long.parseLong(txtMaKhach.getText()));
+            }
             statement.setLong(6, Long.parseLong(txtMaPhong.getText()));
 
             int rows = statement.executeUpdate();
@@ -189,36 +221,40 @@ public class PhongTrolog extends JDialog {
         }
     }
 
-    // Handle Delete Room
     private void handleXoa() {
-        Connection connection = JDBCUtil.getConnection();
-        if (connection == null) {
-            JOptionPane.showMessageDialog(this, "Không thể kết nối tới cơ sở dữ liệu!", "Lỗi", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-
-        try {
-            String query = "DELETE FROM PhongTro WHERE maPhong=?";
-            PreparedStatement statement = connection.prepareStatement(query);
-            statement.setLong(1, Long.parseLong(txtMaPhong.getText()));
-
-            int rows = statement.executeUpdate();
-            if (rows > 0) {
-                JOptionPane.showMessageDialog(this, "Xóa thành công!");
-                clearFields();
-                loadData();  // Reload the data
+        int confirm = JOptionPane.showConfirmDialog(this, "Bạn có chắc chắn muốn xóa phòng này?", "Xác Nhận Xóa", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+        
+        if (confirm == JOptionPane.YES_OPTION) {
+            Connection connection = JDBCUtil.getConnection();
+            if (connection == null) {
+                JOptionPane.showMessageDialog(this, "Không thể kết nối tới cơ sở dữ liệu!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+                return;
             }
 
-            statement.close();
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            JOptionPane.showMessageDialog(this, "Lỗi khi xóa dữ liệu!", "Lỗi", JOptionPane.ERROR_MESSAGE);
-        } finally {
-            JDBCUtil.closeConnection(connection);
+            try {
+                String query = "DELETE FROM PhongTro WHERE maPhong=?";
+                PreparedStatement statement = connection.prepareStatement(query);
+                statement.setLong(1, Long.parseLong(txtMaPhong.getText()));
+
+                int rows = statement.executeUpdate();
+                if (rows > 0) {
+                    JOptionPane.showMessageDialog(this, "Xóa thành công!");
+                    clearFields();
+                    loadData();  // Reload the data
+                }
+
+                statement.close();
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                JOptionPane.showMessageDialog(this, "Lỗi khi xóa dữ liệu!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+            } finally {
+                JDBCUtil.closeConnection(connection);
+            }
+        } else {
+            JOptionPane.showMessageDialog(this, "Hành động xóa đã bị hủy!", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
         }
     }
 
-    // Clear the form fields
     private void clearFields() {
         txtMaPhong.setText("");
         txtTenPhong.setText("");
@@ -228,7 +264,51 @@ public class PhongTrolog extends JDialog {
         txtMaKhach.setText("");
     }
 
-    // Load data from the database into the table
+    private void searchPhongTroByMaPhong() {
+        String maPhong = txtTimKiem.getText().trim();
+        if (maPhong.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Vui lòng nhập mã phòng để tìm kiếm!", "Thông báo", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        Connection connection = JDBCUtil.getConnection();
+        if (connection == null) {
+            JOptionPane.showMessageDialog(this, "Không thể kết nối tới cơ sở dữ liệu!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        try {
+            String query = "SELECT * FROM PhongTro WHERE maPhong = ?";
+            PreparedStatement statement = connection.prepareStatement(query);
+            statement.setLong(1, Long.parseLong(maPhong));
+
+            ResultSet resultSet = statement.executeQuery();
+
+            tableModel.setRowCount(0);  // Clear the table before adding new data
+
+            if (resultSet.next()) {
+                tableModel.addRow(new Object[]{
+                        resultSet.getLong("maPhong"),
+                        resultSet.getString("tenPhong"),
+                        resultSet.getDouble("dienTich"),
+                        resultSet.getDouble("giaThue"),
+                        resultSet.getString("trangThai"),
+                        resultSet.getLong("maKhach")
+                });
+            } else {
+                JOptionPane.showMessageDialog(this, "Không tìm thấy phòng với mã phòng này!", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
+            }
+
+            resultSet.close();
+            statement.close();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Lỗi khi tìm kiếm!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+        } finally {
+            JDBCUtil.closeConnection(connection);
+        }
+    }
+
     private void loadData() {
         Connection connection = JDBCUtil.getConnection();
         if (connection == null) {
@@ -239,9 +319,10 @@ public class PhongTrolog extends JDialog {
         try {
             String query = "SELECT * FROM PhongTro";
             PreparedStatement statement = connection.prepareStatement(query);
+
             ResultSet resultSet = statement.executeQuery();
 
-            tableModel.setRowCount(0);  // Clear the table before adding new data
+            tableModel.setRowCount(0);  // Clear the table before loading data
 
             while (resultSet.next()) {
                 tableModel.addRow(new Object[]{
@@ -256,20 +337,11 @@ public class PhongTrolog extends JDialog {
 
             resultSet.close();
             statement.close();
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (Exception ex) {
+            ex.printStackTrace();
             JOptionPane.showMessageDialog(this, "Lỗi khi tải dữ liệu!", "Lỗi", JOptionPane.ERROR_MESSAGE);
         } finally {
             JDBCUtil.closeConnection(connection);
         }
-    }
-
-    // Method to display the dialog
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            JFrame parentFrame = new JFrame();
-            PhongTrolog dialog = new PhongTrolog(parentFrame);
-            dialog.setVisible(true);
-        });
     }
 }
