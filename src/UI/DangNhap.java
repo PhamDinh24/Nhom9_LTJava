@@ -1,7 +1,9 @@
 package UI;
 
-import Main.Main;  // Ensure you import the Main class
+import Repo.DangNhapRepo;
+import Main.Main;
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -11,61 +13,110 @@ public class DangNhap extends JFrame {
     private JButton btnLogin;
 
     public DangNhap() {
-        initializeUI();
-    }
-
-    private void initializeUI() {
+        // Frame settings
         setTitle("Đăng Nhập");
         setSize(400, 300);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
+        setLayout(new GridBagLayout());
 
-        JPanel panel = new JPanel();
-        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        // GridBagConstraints to manage component placement
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(10, 10, 10, 10); // Padding around components
 
-        JLabel lblUsername = new JLabel("Tên Đăng Nhập:");
+        // Username label and text field
+        JLabel lblUsername = new JLabel("Username:");
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.anchor = GridBagConstraints.WEST;
+        add(lblUsername, gbc);
+
         txtUsername = new JTextField(20);
-        JLabel lblPassword = new JLabel("Mật khẩu:");
+        gbc.gridx = 1;
+        gbc.gridy = 0;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        add(txtUsername, gbc);
+
+        // Password label and text field
+        JLabel lblPassword = new JLabel("Password:");
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        gbc.anchor = GridBagConstraints.WEST;
+        add(lblPassword, gbc);
+
         txtPassword = new JPasswordField(20);
-        
+        gbc.gridx = 1;
+        gbc.gridy = 1;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        add(txtPassword, gbc);
+
+        // Login button
         btnLogin = new JButton("Đăng Nhập");
+        gbc.gridx = 0;
+        gbc.gridy = 2;
+        gbc.gridwidth = 2;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        add(btnLogin, gbc);
+
+        // Add action listener to the login button
         btnLogin.addActionListener(new ActionListener() {
-            @Override
             public void actionPerformed(ActionEvent e) {
-                if (validateLogin(txtUsername.getText(), new String(txtPassword.getPassword()))) {
-                    openMainForm();
-                } else {
-                    JOptionPane.showMessageDialog(DangNhap.this, "Sai tên đăng nhập hoặc mật khẩu!", "Lỗi", JOptionPane.ERROR_MESSAGE);
-                }
+                handleLogin();
             }
         });
-
-        panel.add(lblUsername);
-        panel.add(txtUsername);
-        panel.add(lblPassword);
-        panel.add(txtPassword);
-        panel.add(btnLogin);
-
-        add(panel);
     }
 
-    private boolean validateLogin(String username, String password) {
-        // Simple validation for admin login credentials
-        return username.equals("admin") && password.equals("password");
+    // Handle Login button click event
+    private void handleLogin() {
+        String username = txtUsername.getText();
+        String password = new String(txtPassword.getPassword());
+
+        // Hardcoded credentials
+        String correctUsername = "admin";
+        String correctPassword = "1234";
+
+        // Check if the entered credentials match the hardcoded values
+        if (username.equals(correctUsername) && password.equals(correctPassword)) {
+            // Successful login
+            JOptionPane.showMessageDialog(this, "Đăng nhập thành công!");
+
+            // Open the main window after successful login
+            openMainWindow();
+
+            // Dispose of the login window to prevent the user from coming back to it
+            this.dispose();
+        } else {
+            // Show error message if login fails
+            JOptionPane.showMessageDialog(this, "Sai tên đăng nhập hoặc mật khẩu!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+
+            // Optionally, clear the password field after a failed login attempt
+            txtPassword.setText("");
+        }
     }
 
-    private void openMainForm() {
+    // Method to open the main window after successful login
+    private void openMainWindow() {
         SwingUtilities.invokeLater(() -> {
+            // Create and display the Main window
             Main mainForm = new Main();
-            mainForm.setVisible(true);  // Show Main form after login
-            dispose();  // Close the login form
+            mainForm.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            mainForm.setSize(1000, 600);  // Customize the size as needed
+            mainForm.setLocationRelativeTo(null);
+            mainForm.setTitle("Main Window - Chu Tro");
+            mainForm.setVisible(true);
         });
     }
 
+    // Main method to launch the login form
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
+            // Initialize and display the login window
             DangNhap loginForm = new DangNhap();
-            loginForm.setVisible(true);  // Show login form when the application starts
+            loginForm.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            loginForm.setSize(400, 300);
+            loginForm.setLocationRelativeTo(null);
+            loginForm.setTitle("Đăng Nhập");
+            loginForm.setVisible(true);
         });
     }
 }

@@ -1,60 +1,60 @@
+
+
 package UI;
 
-import Repo.DangNhapRepo;
-import javax.swing.*;
+import java.awt.Component;
+import java.awt.LayoutManager;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPasswordField;
+import javax.swing.JTextField;
 
 public class DangKy extends JFrame {
     private JTextField usernameField;
     private JPasswordField passwordField;
     private JButton registerButton;
+    private JButton backButton;
 
     public DangKy() {
-        setTitle("Đăng ký");
-        setSize(300, 200);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setLocationRelativeTo(null);
-        setLayout(null);
-
+        this.setTitle("Đăng ký");
+        this.setSize(300, 200);
+        this.setDefaultCloseOperation(3);
+        this.setLocationRelativeTo((Component)null);
+        this.setLayout((LayoutManager)null);
         JLabel usernameLabel = new JLabel("Username:");
         usernameLabel.setBounds(20, 30, 80, 25);
-        add(usernameLabel);
-
-        usernameField = new JTextField();
-        usernameField.setBounds(100, 30, 160, 25);
-        add(usernameField);
-
+        this.add(usernameLabel);
+        this.usernameField = new JTextField();
+        this.usernameField.setBounds(100, 30, 160, 25);
+        this.add(this.usernameField);
         JLabel passwordLabel = new JLabel("Password:");
         passwordLabel.setBounds(20, 70, 80, 25);
-        add(passwordLabel);
-
-        passwordField = new JPasswordField();
-        passwordField.setBounds(100, 70, 160, 25);
-        add(passwordField);
-
-        registerButton = new JButton("Register");
-        registerButton.setBounds(50, 110, 200, 25);
-        add(registerButton);
-
-        // Xử lý sự kiện đăng ký
-        registerButton.addActionListener(new ActionListener() {
-            @Override
+        this.add(passwordLabel);
+        this.passwordField = new JPasswordField();
+        this.passwordField.setBounds(100, 70, 160, 25);
+        this.add(this.passwordField);
+        this.registerButton = new JButton("Register");
+        this.registerButton.setBounds(50, 110, 100, 25);
+        this.add(this.registerButton);
+        this.backButton = new JButton("Back");
+        this.backButton.setBounds(160, 110, 80, 25);
+        this.add(this.backButton);
+        this.registerButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                String username = usernameField.getText();
-                String password = String.valueOf(passwordField.getPassword());
-                Long role = 0L;  // role 0: Chủ trọ, role 1: Khách hàng
-
-                boolean isSuccess = DangNhapRepo.getInstance().DangKy(username, password, role);
-
-                if (isSuccess) {
-                    JOptionPane.showMessageDialog(null, "Đăng ký thành công!");
-                    dispose();  // Đóng form đăng ký
-                    DangNhap loginForm = new DangNhap();
-                    loginForm.setVisible(true);  // Mở form đăng nhập
-                } else {
-                    JOptionPane.showMessageDialog(null, "Đăng ký thất bại!", "Lỗi", JOptionPane.ERROR_MESSAGE);
-                }
+                String username = DangKy.this.usernameField.getText();
+                String password = String.valueOf(DangKy.this.passwordField.getPassword());
+                JOptionPane.showMessageDialog((Component)null, "Registered successfully!");
+            }
+        });
+        this.backButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                DangNhap loginForm = new DangNhap();
+                loginForm.setVisible(true);
+                DangKy.this.dispose();
             }
         });
     }

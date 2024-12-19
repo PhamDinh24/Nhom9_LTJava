@@ -7,8 +7,6 @@ import database.JDBCUtil;
 import UI.PhongTrolog;
 import UI.Trolog;
 import UI.TimKiemDialog;
-import UI.DangNhap;
-
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
@@ -46,7 +44,7 @@ public class Main {
 
         frame.add(mainPanel);
         frame.setLocationRelativeTo(null);
-        frame.setVisible(true);
+        frame.setVisible(true); // Frame visible only once after fully set up
     }
 
     private JPanel createTitlePanel() {
@@ -136,7 +134,7 @@ public class Main {
         createActionButton(buttonPanel, "Thêm Mới", this::handleThemmoi);
         createActionButton(buttonPanel, "Cập Nhật", this::handleCapNhat);
         createActionButton(buttonPanel, "Xóa", this::handleXoa);
-        createActionButton(buttonPanel, "Tìm kiếm", this::TimKiemDialog);
+        createActionButton(buttonPanel, "Tìm kiếm", this::TimKiemDialog);
         return buttonPanel;
     }
 
@@ -182,7 +180,7 @@ public class Main {
 
     private void handleThemmoi() {
         try (Connection connection = JDBCUtil.getConnection();
-             PreparedStatement statement = connection.prepareStatement("INSERT INTO KhachTro (hoTen, ngaySinh, gioiTinh, queQuan, soDienThoai, gmail) VALUES (?, ?, ?, ?, ?, ?)");) {
+             PreparedStatement statement = connection.prepareStatement("INSERT INTO KhachTro (hoTen, ngaySinh, gioiTinh, queQuan, soDienThoai, gmail) VALUES (?, ?, ?, ?, ?, ?)")) {
 
             statement.setString(1, txtHoTen.getText());
             statement.setDate(2, java.sql.Date.valueOf(txtNgaySinh.getText()));
@@ -205,7 +203,7 @@ public class Main {
 
     private void handleCapNhat() {
         try (Connection connection = JDBCUtil.getConnection();
-             PreparedStatement statement = connection.prepareStatement("UPDATE KhachTro SET hoTen=?, ngaySinh=?, gioiTinh=?, queQuan=?, soDienThoai=?, gmail=? WHERE maKhach=?");) {
+             PreparedStatement statement = connection.prepareStatement("UPDATE KhachTro SET hoTen=?, ngaySinh=?, gioiTinh=?, queQuan=?, soDienThoai=?, gmail=? WHERE maKhach=?")) {
 
             statement.setString(1, txtHoTen.getText());
             statement.setDate(2, java.sql.Date.valueOf(txtNgaySinh.getText()));
@@ -235,7 +233,7 @@ public class Main {
 
         if (option == JOptionPane.YES_OPTION) {
             try (Connection connection = JDBCUtil.getConnection();
-                 PreparedStatement statement = connection.prepareStatement("DELETE FROM KhachTro WHERE maKhach=?");) {
+                 PreparedStatement statement = connection.prepareStatement("DELETE FROM KhachTro WHERE maKhach=?")) {
 
                 statement.setLong(1, Long.parseLong(txtMaKhach.getText()));
 
@@ -289,4 +287,29 @@ public class Main {
     public static void main(String[] args) {
         new Main();
     }
+
+	public void setDefaultCloseOperation(int exitOnClose) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void setSize(int i, int j) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void setLocationRelativeTo(Object object) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void setTitle(String string) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void setVisible(boolean b) {
+		// TODO Auto-generated method stub
+		
+	}
 }
