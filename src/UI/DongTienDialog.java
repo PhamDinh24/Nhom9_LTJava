@@ -77,11 +77,11 @@ public class DongTienDialog extends JDialog {
             ex.printStackTrace();
             JOptionPane.showMessageDialog(this, "Lỗi khi tải danh sách mã khách: " + ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
         } finally {
-        	JDBCUtil.closeConnection(connection);
+            JDBCUtil.closeConnection(connection);
         }
     }
 
-    // Phương thức tải danh sách Mã Phòng từ cơ sở dữ liệu
+    // Phương thức tải danh sách Mã Phòng từ cơ sở dữ liệu, chỉ lấy các phòng đã có người thuê
     private void loadMaPhong() {
         Connection connection = JDBCUtil.getConnection();
         if (connection == null) {
@@ -90,7 +90,7 @@ public class DongTienDialog extends JDialog {
         }
 
         try {
-            String query = "SELECT maPhong FROM PhongTro WHERE trangThai = 'Trống'"; // Chỉ lấy các phòng trống
+            String query = "SELECT maPhong FROM PhongTro WHERE trangThai = 'Đã thuê'"; // Chỉ lấy các phòng đã có người thuê
             PreparedStatement statement = connection.prepareStatement(query);
             ResultSet resultSet = statement.executeQuery();
 
@@ -108,7 +108,7 @@ public class DongTienDialog extends JDialog {
             ex.printStackTrace();
             JOptionPane.showMessageDialog(this, "Lỗi khi tải danh sách mã phòng: " + ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
         } finally {
-        	JDBCUtil.closeConnection(connection);
+            JDBCUtil.closeConnection(connection);
         }
     }
 
@@ -137,26 +137,40 @@ public class DongTienDialog extends JDialog {
         }
 
         try {
-            String query = "INSERT INTO DongTien (maKhach, maPhong, soTien, ngayDong) VALUES (?, ?, ?, CURDATE())";
-            PreparedStatement statement = connection.prepareStatement(query);
-            statement.setString(1, maKhach);  // Lưu mã khách
-            statement.setString(2, maPhong);  // Lưu mã phòng
-            statement.setDouble(3, soTien);   // Lưu số tiền
+            // Kiểm tra xem phòng đã có người thuê chưa
+            String checkPhongQuery = "SELECT COUNT(*) FROM PhongTro WHERE maPhong = ? AND trangThai = 'Đã thuê'";
+            PreparedStatement checkStatement = connection.prepareStatement(checkPhongQuery);
+            checkStatement.setString(1, maPhong);
+            ResultSet checkResultSet = checkStatement.executeQuery();
 
-            int rows = statement.executeUpdate();
-            if (rows > 0) {
-                JOptionPane.showMessageDialog(this, "Đóng tiền thành công!");
-                dispose();
+            if (checkResultSet.next() && checkResultSet.getInt(1) > 0) {
+                // Phòng có người thuê, thực hiện đóng tiền
+                String query = "INSERT INTO DongTien (maKhach, maPhong, soTien, ngayDong) VALUES (?, ?, ?, CURDATE())";
+                PreparedStatement statement = connection.prepareStatement(query);
+                statement.setString(1, maKhach);  // Lưu mã khách
+                statement.setString(2, maPhong);  // Lưu mã phòng
+                statement.setDouble(3, soTien);   // Lưu số tiền
+
+                int rows = statement.executeUpdate();
+                if (rows > 0) {
+                    JOptionPane.showMessageDialog(this, "Đóng tiền thành công!");
+                    dispose();
+                } else {
+                    JOptionPane.showMessageDialog(this, "Không thể đóng tiền!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+                }
+
+                statement.close();
             } else {
-                JOptionPane.showMessageDialog(this, "Không thể đóng tiền!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Phòng chưa có người thuê hoặc đã trả phòng!", "Lỗi", JOptionPane.ERROR_MESSAGE);
             }
 
-            statement.close();
+            checkResultSet.close();
+            checkStatement.close();
         } catch (Exception ex) {
             ex.printStackTrace();
             JOptionPane.showMessageDialog(this, "Lỗi khi đóng tiền: " + ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
         } finally {
-        	JDBCUtil.closeConnection(connection);
+            JDBCUtil.closeConnection(connection);
         }
     }
 }
