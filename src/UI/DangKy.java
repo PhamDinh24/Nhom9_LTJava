@@ -1,5 +1,6 @@
 package UI;
 
+import Repo.DangNhapRepo;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -8,7 +9,6 @@ public class DangKy extends JFrame {
     private JTextField usernameField;
     private JPasswordField passwordField;
     private JButton registerButton;
-    private JButton backButton;
 
     public DangKy() {
         setTitle("Đăng ký");
@@ -34,29 +34,27 @@ public class DangKy extends JFrame {
         add(passwordField);
 
         registerButton = new JButton("Register");
-        registerButton.setBounds(50, 110, 100, 25);
+        registerButton.setBounds(50, 110, 200, 25);
         add(registerButton);
 
-        backButton = new JButton("Back");
-        backButton.setBounds(160, 110, 80, 25);
-        add(backButton);
-
+        // Xử lý sự kiện đăng ký
         registerButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 String username = usernameField.getText();
                 String password = String.valueOf(passwordField.getPassword());
-                // Thêm mã xử lý đăng ký tại đây
-                JOptionPane.showMessageDialog(null, "Registered successfully!");
-            }
-        });
+                Long role = 0L;  // role 0: Chủ trọ, role 1: Khách hàng
 
-        backButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                DangNhap loginForm = new DangNhap();
-                loginForm.setVisible(true);
-                dispose();
+                boolean isSuccess = DangNhapRepo.getInstance().DangKy(username, password, role);
+
+                if (isSuccess) {
+                    JOptionPane.showMessageDialog(null, "Đăng ký thành công!");
+                    dispose();  // Đóng form đăng ký
+                    DangNhap loginForm = new DangNhap();
+                    loginForm.setVisible(true);  // Mở form đăng nhập
+                } else {
+                    JOptionPane.showMessageDialog(null, "Đăng ký thất bại!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+                }
             }
         });
     }

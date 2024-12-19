@@ -5,7 +5,7 @@ CREATE DATABASE QLPTro;
 -- Sử dụng cơ sở dữ liệu
 USE QLPTro;
 
-CREATE TABLE ChuPhong (
+CREATE TABLE ChuTro (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,         -- Mã ID, kiểu số nguyên lớn, tự động tăng
     hoTen VARCHAR(255) NOT NULL,                  -- Họ và tên, chuỗi ký tự, không được để trống
     ngaySinh DATE,                                -- Ngày sinh, kiểu ngày tháng

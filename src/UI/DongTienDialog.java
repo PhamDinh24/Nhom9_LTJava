@@ -59,7 +59,11 @@ public class DongTienDialog extends JDialog {
         }
 
         try {
-            String query = "SELECT maKhach FROM KhachTro";
+            // Thêm điều kiện WHERE để chỉ lấy mã khách có phòng đã thuê
+            String query = "SELECT DISTINCT K.maKhach " +
+                           "FROM KhachTro K " +
+                           "JOIN PhongTro P ON K.maKhach = P.maKhach " +
+                           "WHERE P.trangThai = 'Đã thuê'";  // Lấy mã khách có phòng đã thuê
             PreparedStatement statement = connection.prepareStatement(query);
             ResultSet resultSet = statement.executeQuery();
 
@@ -67,6 +71,9 @@ public class DongTienDialog extends JDialog {
             while (resultSet.next()) {
                 maKhachList.add(resultSet.getString("maKhach"));
             }
+            
+            // Xóa các mục cũ trước khi thêm mục mới vào ComboBox
+            cbMaKhach.removeAllItems();
             for (String maKhach : maKhachList) {
                 cbMaKhach.addItem(maKhach);
             }

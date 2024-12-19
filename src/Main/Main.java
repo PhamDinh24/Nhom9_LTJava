@@ -7,6 +7,7 @@ import database.JDBCUtil;
 import UI.PhongTrolog;
 import UI.Trolog;
 import UI.TimKiemDialog;
+import UI.DangNhap;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -226,14 +227,12 @@ public class Main {
     }
 
     private void handleXoa() {
-        // Hiển thị hộp thoại xác nhận xóa
         int option = JOptionPane.showConfirmDialog(frame,
                 "Bạn có chắc chắn muốn xóa khách trọ này?",
                 "Xác Nhận Xóa",
                 JOptionPane.YES_NO_OPTION,
                 JOptionPane.WARNING_MESSAGE);
 
-        // Nếu người dùng chọn "YES", thực hiện xóa
         if (option == JOptionPane.YES_OPTION) {
             try (Connection connection = JDBCUtil.getConnection();
                  PreparedStatement statement = connection.prepareStatement("DELETE FROM KhachTro WHERE maKhach=?");) {
@@ -253,7 +252,6 @@ public class Main {
                 JOptionPane.showMessageDialog(frame, "Lỗi khi xóa: " + e.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
             }
         } else {
-            // Nếu người dùng chọn "NO", không làm gì cả (hủy bỏ xóa)
             JOptionPane.showMessageDialog(frame, "Hành động xóa đã bị hủy bỏ.");
         }
     }
@@ -262,6 +260,7 @@ public class Main {
         txtMaKhach.setText("");
         txtHoTen.setText("");
         txtNgaySinh.setText("");
+        cbGioiTinh.setSelectedIndex(0);
         txtQueQuan.setText("");
         txtSDT.setText("");
         txtEmail.setText("");
@@ -288,6 +287,6 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(Main::new);
+        new Main();
     }
 }

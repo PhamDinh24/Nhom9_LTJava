@@ -1,68 +1,71 @@
 package UI;
 
+import Main.Main;  // Ensure you import the Main class
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-
 public class DangNhap extends JFrame {
-    private JTextField usernameField;
-    private JPasswordField passwordField;
-    private JButton loginButton;
-    private JButton registerButton;
+    private JTextField txtUsername;
+    private JPasswordField txtPassword;
+    private JButton btnLogin;
 
     public DangNhap() {
-        setTitle("Đăng nhập");
-        setSize(300, 200);
+        initializeUI();
+    }
+
+    private void initializeUI() {
+        setTitle("Đăng Nhập");
+        setSize(400, 300);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
-        setLayout(null);
 
-        JLabel usernameLabel = new JLabel("Username:");
-        usernameLabel.setBounds(20, 30, 80, 25);
-        add(usernameLabel);
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 
-        usernameField = new JTextField();
-        usernameField.setBounds(100, 30, 160, 25);
-        add(usernameField);
-
-        JLabel passwordLabel = new JLabel("Password:");
-        passwordLabel.setBounds(20, 70, 80, 25);
-        add(passwordLabel);
-
-        passwordField = new JPasswordField();
-        passwordField.setBounds(100, 70, 160, 25);
-        add(passwordField);
-
-        loginButton = new JButton("Login");
-        loginButton.setBounds(50, 110, 80, 25);
-        add(loginButton);
-
-        registerButton = new JButton("Register");
-        registerButton.setBounds(150, 110, 100, 25);
-        add(registerButton);
-
-        loginButton.addActionListener(new ActionListener() {
+        JLabel lblUsername = new JLabel("Tên Đăng Nhập:");
+        txtUsername = new JTextField(20);
+        JLabel lblPassword = new JLabel("Mật khẩu:");
+        txtPassword = new JPasswordField(20);
+        
+        btnLogin = new JButton("Đăng Nhập");
+        btnLogin.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String username = usernameField.getText();
-                String password = String.valueOf(passwordField.getPassword());
-                // Thêm mã xác thực đăng nhập tại đây
-                JOptionPane.showMessageDialog(null, "Logged in successfully!");
+                if (validateLogin(txtUsername.getText(), new String(txtPassword.getPassword()))) {
+                    openMainForm();
+                } else {
+                    JOptionPane.showMessageDialog(DangNhap.this, "Sai tên đăng nhập hoặc mật khẩu!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+                }
             }
         });
 
-        registerButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                DangKy registerForm = new DangKy();
-                registerForm.setVisible(true);
-                dispose();
-            }
+        panel.add(lblUsername);
+        panel.add(txtUsername);
+        panel.add(lblPassword);
+        panel.add(txtPassword);
+        panel.add(btnLogin);
+
+        add(panel);
+    }
+
+    private boolean validateLogin(String username, String password) {
+        // Simple validation for admin login credentials
+        return username.equals("admin") && password.equals("password");
+    }
+
+    private void openMainForm() {
+        SwingUtilities.invokeLater(() -> {
+            Main mainForm = new Main();
+            mainForm.setVisible(true);  // Show Main form after login
+            dispose();  // Close the login form
         });
     }
+
     public static void main(String[] args) {
-        DangNhap loginForm = new DangNhap();
-        loginForm.setVisible(true);
+        SwingUtilities.invokeLater(() -> {
+            DangNhap loginForm = new DangNhap();
+            loginForm.setVisible(true);  // Show login form when the application starts
+        });
     }
 }

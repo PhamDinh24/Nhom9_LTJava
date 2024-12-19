@@ -12,7 +12,7 @@ public class Trolog extends JDialog {
     private static final long serialVersionUID = 1L;
     private JComboBox<String> cbMaKhach;
     private JComboBox<String> cbMaPhong;
-    private JTextField txtSoTien;
+    private JLabel lblTenKhach;
     private JButton btnDongY, btnHuy;
 
     public Trolog(JFrame parent) {
@@ -20,7 +20,7 @@ public class Trolog extends JDialog {
         setSize(400, 250);
         setLocationRelativeTo(parent);
 
-        JPanel panel = new JPanel(new GridLayout(5, 2, 10, 10));  // Added one extra row for SoTien field
+        JPanel panel = new JPanel(new GridLayout(5, 2, 10, 10));  // Thêm một dòng để hiển thị tên khách
         panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
         panel.add(new JLabel("Mã Khách:"));
@@ -28,14 +28,14 @@ public class Trolog extends JDialog {
         loadMaKhach();
         panel.add(cbMaKhach);
 
+        panel.add(new JLabel("Tên Khách:"));
+        lblTenKhach = new JLabel();
+        panel.add(lblTenKhach);
+
         panel.add(new JLabel("Mã Phòng:"));
         cbMaPhong = new JComboBox<>();
         loadMaPhong();
         panel.add(cbMaPhong);
-
-        panel.add(new JLabel("Số Tiền:"));
-        txtSoTien = new JTextField();
-        panel.add(txtSoTien);
 
         btnDongY = new JButton("Đồng Ý");
         btnHuy = new JButton("Hủy");
@@ -49,6 +49,9 @@ public class Trolog extends JDialog {
 
         btnHuy.addActionListener(e -> dispose());
         btnDongY.addActionListener(e -> handleDongY());
+
+        // Thêm sự kiện cho ComboBox mã khách
+        cbMaKhach.addActionListener(e -> loadTenKhach());
     }
 
     private void loadMaKhach() {
@@ -59,7 +62,8 @@ public class Trolog extends JDialog {
         }
 
         try {
-            String query = "SELECT maKhach FROM KhachTro";
+            // Truy vấn lấy mã khách trọ mà chưa thuê phòng
+            String query = "SELECT maKhach FROM KhachTro WHERE maKhach NOT IN (SELECT maKhach FROM PhongTro WHERE trangThai = 'Đã thuê')";
             PreparedStatement statement = connection.prepareStatement(query);
             ResultSet resultSet = statement.executeQuery();
 
@@ -67,6 +71,11 @@ public class Trolog extends JDialog {
             while (resultSet.next()) {
                 maKhachList.add(resultSet.getString("maKhach"));
             }
+
+            // Xóa các mục cũ trong JComboBox
+            cbMaKhach.removeAllItems();
+
+            // Thêm mã khách vào JComboBox
             for (String maKhach : maKhachList) {
                 cbMaKhach.addItem(maKhach);
             }
@@ -81,6 +90,38 @@ public class Trolog extends JDialog {
         }
     }
 
+    private void loadTenKhach() {
+        String maKhach = (String) cbMaKhach.getSelectedItem();
+        if (maKhach != null) {
+            Connection connection = JDBCUtil.getConnection();
+            if (connection == null) {
+                JOptionPane.showMessageDialog(this, "Không thể kết nối tới cơ sở dữ liệu!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            try {
+                // Truy vấn lấy tên khách từ mã khách
+                String query = "SELECT hoTen FROM KhachTro WHERE maKhach = ?";
+                PreparedStatement statement = connection.prepareStatement(query);
+                statement.setString(1, maKhach);
+                ResultSet resultSet = statement.executeQuery();
+
+                if (resultSet.next()) {
+                    String tenKhach = resultSet.getString("hoTen");
+                    lblTenKhach.setText(tenKhach);  // Hiển thị tên khách
+                }
+
+                resultSet.close();
+                statement.close();
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                JOptionPane.showMessageDialog(this, "Lỗi khi tải tên khách: " + ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+            } finally {
+                JDBCUtil.closeConnection(connection);
+            }
+        }
+    }
+
     private void loadMaPhong() {
         Connection connection = JDBCUtil.getConnection();
         if (connection == null) {
@@ -89,6 +130,7 @@ public class Trolog extends JDialog {
         }
 
         try {
+            // Truy vấn lấy mã phòng trống
             String query = "SELECT maPhong FROM PhongTro WHERE trangThai = 'Trống'";
             PreparedStatement statement = connection.prepareStatement(query);
             ResultSet resultSet = statement.executeQuery();
@@ -97,6 +139,11 @@ public class Trolog extends JDialog {
             while (resultSet.next()) {
                 maPhongList.add(resultSet.getString("maPhong"));
             }
+
+            // Xóa các mục cũ trong JComboBox
+            cbMaPhong.removeAllItems();
+
+            // Thêm mã phòng vào JComboBox
             for (String maPhong : maPhongList) {
                 cbMaPhong.addItem(maPhong);
             }
@@ -114,11 +161,10 @@ public class Trolog extends JDialog {
     private void handleDongY() {
         String maKhach = (String) cbMaKhach.getSelectedItem();
         String maPhong = (String) cbMaPhong.getSelectedItem();
-        String soTien = txtSoTien.getText();
 
         // Kiểm tra xem thông tin đã đầy đủ chưa
-        if (maKhach == null || maPhong == null || soTien.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Vui lòng điền đầy đủ thông tin!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+        if (maKhach == null || maPhong == null) {
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn đầy đủ thông tin!", "Lỗi", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
@@ -132,24 +178,14 @@ public class Trolog extends JDialog {
             // Bắt đầu giao dịch
             connection.setAutoCommit(false);
 
-            // Thêm vào bảng DongTien
-            String insertQuery = "INSERT INTO DongTien (maKhach, maPhong, soTien, ngayDong) VALUES (?, ?, ?, CURDATE())";
-            PreparedStatement statement = connection.prepareStatement(insertQuery);
-            statement.setString(1, maKhach); // maKhach là kiểu String
-            statement.setString(2, maPhong); // maPhong là kiểu String
-            statement.setDouble(3, Double.parseDouble(soTien));  // SoTien là kiểu double
+            // Cập nhật trạng thái phòng thành "Đã thuê"
+            String updateQuery = "UPDATE PhongTro SET trangThai = 'Đã thuê', maKhach = ? WHERE maPhong = ?";
+            PreparedStatement updateStatement = connection.prepareStatement(updateQuery);
+            updateStatement.setString(1, maKhach);  // maKhach là kiểu String
+            updateStatement.setString(2, maPhong);  // maPhong là kiểu String
 
-            int rowsAffected = statement.executeUpdate();
+            int rowsAffected = updateStatement.executeUpdate();
             if (rowsAffected > 0) {
-                // Cập nhật bảng PhongTro để đánh dấu phòng là "Đã thuê"
-                String updateQuery = "UPDATE PhongTro SET trangThai = 'Đã thuê', maKhach = ? WHERE maPhong = ?";
-                PreparedStatement updateStatement = connection.prepareStatement(updateQuery);
-                updateStatement.setString(1, maKhach);  // maKhach là kiểu String
-                updateStatement.setString(2, maPhong);  // maPhong là kiểu String
-
-                updateStatement.executeUpdate();
-                updateStatement.close();
-
                 // Cam kết giao dịch
                 connection.commit();
                 JOptionPane.showMessageDialog(this, "Đã nhập trọ thành công!");
@@ -158,7 +194,7 @@ public class Trolog extends JDialog {
                 JOptionPane.showMessageDialog(this, "Không thể thực hiện giao dịch!", "Lỗi", JOptionPane.ERROR_MESSAGE);
             }
 
-            statement.close();
+            updateStatement.close();
         } catch (Exception ex) {
             try {
                 connection.rollback();  // Hoàn tác giao dịch khi có lỗi
