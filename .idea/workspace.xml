@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="72f8a19c-d846-4d76-b728-af35f018ecb1" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/bin/UI/DangKy$1.class" beforeDir="false" afterPath="$PROJECT_DIR$/bin/UI/DangKy$1.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bin/UI/DangKy$2.class" beforeDir="false" afterPath="$PROJECT_DIR$/bin/UI/DangKy$2.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bin/UI/DangKy.class" beforeDir="false" afterPath="$PROJECT_DIR$/bin/UI/DangKy.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bin/UI/DangNhap$1.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/bin/UI/DangNhap.class" beforeDir="false" afterPath="$PROJECT_DIR$/bin/UI/DangNhap.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Main/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Main/Main.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/UI/DangKy.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/UI/DangKy.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/UI/DangNhap.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/UI/DangNhap.java" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="ProjectColorInfo"><![CDATA[{
+  "associatedIndex": 6
+}]]></component>
+  <component name="ProjectId" id="2vbeJHw7M6rAje1AdnsT3YmZt3u" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "git-widget-placeholder": "master",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "D:/Eclipse/BTL_Java_Group9/src"
+  }
+}]]></component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="72f8a19c-d846-4d76-b728-af35f018ecb1" name="Changes" comment="" />
+      <created>1744418127478</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1744418127478</updated>
+    </task>
+    <servers />
+  </component>
+</project>

@@ -1,0 +1,20 @@
+<component name="libraryTable">
+  <library name="lib">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/commons-compress-1.27.1.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/log4j-core-2.24.3.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/poi-ooxml-4.0.1.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/commons-io-2.18.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/xmlbeans-3.0.2.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/log4j-api-2.24.3.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/mssql-jdbc-12.8.1.jre8.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/poi-ooxml-schemas-4.0.1.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/poi-4.0.1.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/mysql-connector-j-9.0.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/commons-collections4-4.4.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/mssql-jdbc-12.8.1.jre11.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

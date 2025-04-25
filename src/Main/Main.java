@@ -295,7 +295,7 @@ public class Main {
 
 	public void setSize(int i, int j) {
 		// TODO Auto-generated method stub
-		
+	
 	}
 
 	public void setLocationRelativeTo(Object object) {
